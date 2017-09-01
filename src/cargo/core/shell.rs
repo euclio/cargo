@@ -2,8 +2,7 @@ use std::fmt;
 use std::io::prelude::*;
 
 use atty;
-use termcolor::Color::{Green, Red, Yellow};
-use termcolor::{self, StandardStream, Color, ColorSpec, WriteColor};
+use console::{self, Color, Term, Style};
 
 use util::errors::CargoResult;
 
@@ -27,7 +26,7 @@ impl fmt::Debug for Shell {
 
 enum ShellOut {
     Write(Box<Write>),
-    Stream(StandardStream, ColorChoice),
+    Stream(Term, ColorChoice),
 }
 
 #[derive(PartialEq, Clone, Copy)]
@@ -39,9 +38,11 @@ pub enum ColorChoice {
 
 impl Shell {
     pub fn new() -> Shell {
+        set_colors(&ColorChoice::CargoAuto);
+
         Shell {
             err: ShellOut::Stream(
-                StandardStream::stderr(ColorChoice::CargoAuto.to_termcolor_color_choice()),
+                Term::stderr(),
                 ColorChoice::CargoAuto,
             ),
             verbosity: Verbosity::Verbose,
@@ -75,7 +76,7 @@ impl Shell {
     pub fn status<T, U>(&mut self, status: T, message: U) -> CargoResult<()>
         where T: fmt::Display, U: fmt::Display
     {
-        self.print(&status, &message, Green, true)
+        self.print(&status, &message, Color::Green, true)
     }
 
     pub fn status_with_color<T, U>(&mut self,
@@ -106,13 +107,13 @@ impl Shell {
     }
 
     pub fn error<T: fmt::Display>(&mut self, message: T) -> CargoResult<()> {
-        self.print(&"error:", &message, Red, false)
+        self.print(&"error:", &message, Color::Red, false)
     }
 
     pub fn warn<T: fmt::Display>(&mut self, message: T) -> CargoResult<()> {
         match self.verbosity {
             Verbosity::Quiet => Ok(()),
-            _ => self.print(&"warning:", &message, Yellow, false),
+            _ => self.print(&"warning:", &message, Color::Yellow, false),
         }
     }
 
@@ -137,7 +138,8 @@ impl Shell {
                                     never, but found `{}`", arg),
             };
             *cc = cfg;
-            *err = StandardStream::stderr(cfg.to_termcolor_color_choice());
+            set_colors(&cfg);
+            *err = Term::stderr();
         }
         Ok(())
     }
@@ -158,16 +160,15 @@ impl ShellOut {
              justified: bool) -> CargoResult<()> {
         match *self {
             ShellOut::Stream(ref mut err, _) => {
-                err.reset()?;
-                err.set_color(ColorSpec::new()
-                                    .set_bold(true)
-                                    .set_fg(Some(color)))?;
+                let style = Style::new()
+                    .fg(color)
+                    .bold();
+
                 if justified {
-                    write!(err, "{:>12}", status)?;
+                    write!(err, "{:>12}", style.apply_to(status))?;
                 } else {
-                    write!(err, "{}", status)?;
+                    write!(err, "{}", style.apply_to(status))?;
                 }
-                err.reset()?;
                 write!(err, " {}\n", message)?;
             }
             ShellOut::Write(ref mut w) => {
@@ -190,17 +191,15 @@ impl ShellOut {
     }
 }
 
-impl ColorChoice {
-    fn to_termcolor_color_choice(&self) -> termcolor::ColorChoice {
-        match *self {
-            ColorChoice::Always => termcolor::ColorChoice::Always,
-            ColorChoice::Never => termcolor::ColorChoice::Never,
-            ColorChoice::CargoAuto => {
-                if atty::is(atty::Stream::Stderr) {
-                    termcolor::ColorChoice::Auto
-                } else {
-                    termcolor::ColorChoice::Never
-                }
+fn set_colors(choice: &ColorChoice) {
+    match *choice {
+        ColorChoice::Always => console::set_colors_enabled(true),
+        ColorChoice::Never => console::set_colors_enabled(false),
+        ColorChoice::CargoAuto => {
+            if atty::is(atty::Stream::Stderr) {
+                console::set_colors_enabled(true);
+            } else {
+                console::set_colors_enabled(false);
             }
         }
     }

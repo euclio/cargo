@@ -8,6 +8,7 @@
 #[macro_use] extern crate serde_derive;
 #[macro_use] extern crate serde_json;
 extern crate atty;
+extern crate console;
 extern crate crates_io as registry;
 extern crate crossbeam;
 extern crate curl;
@@ -31,7 +32,6 @@ extern crate serde_ignored;
 extern crate shell_escape;
 extern crate tar;
 extern crate tempdir;
-extern crate termcolor;
 extern crate toml;
 extern crate url;
 #[cfg(target_os = "macos")]

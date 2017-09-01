@@ -3,7 +3,7 @@ use std::io::*;
 use std::io;
 use std::path::{Path, PathBuf, Display};
 
-use termcolor::Color::Cyan;
+use console::Color;
 use fs2::{FileExt, lock_contended_error};
 #[allow(unused_imports)]
 use libc;
@@ -290,7 +290,7 @@ fn acquire(config: &Config,
         }
     }
     let msg = format!("waiting for file lock on {}", msg);
-    config.shell().status_with_color("Blocking", &msg, Cyan)?;
+    config.shell().status_with_color("Blocking", &msg, Color::Cyan)?;
 
     return block().chain_err(|| {
         format!("failed to lock file: {}", path.display())
