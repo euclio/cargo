@@ -7,7 +7,7 @@ pub use self::package_id::PackageId;
 pub use self::package_id_spec::PackageIdSpec;
 pub use self::registry::Registry;
 pub use self::resolver::Resolve;
-pub use self::shell::{Shell, Verbosity};
+pub use self::shell::{Shell, ShellOut, Verbosity};
 pub use self::source::{Source, SourceId, SourceMap, GitReference};
 pub use self::summary::Summary;
 pub use self::workspace::{Members, Workspace, WorkspaceConfig};

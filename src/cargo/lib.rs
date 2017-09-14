@@ -21,6 +21,7 @@ extern crate glob;
 extern crate hex;
 extern crate home;
 extern crate ignore;
+extern crate indicatif;
 extern crate jobserver;
 extern crate libc;
 extern crate libgit2_sys;

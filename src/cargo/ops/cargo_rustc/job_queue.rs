@@ -363,6 +363,10 @@ impl<'a> JobQueue<'a> {
             return Ok(())
         }
 
+        let spinner = ::indicatif::ProgressBar::new_spinner();
+        spinner.set_draw_target(::indicatif::ProgressDrawTarget::stderr());
+        spinner.enable_steady_tick(50);
+
         match fresh {
             // Any dirty stage which runs at least one command gets printed as
             // being a compiled package

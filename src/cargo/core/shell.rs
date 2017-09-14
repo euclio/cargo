@@ -14,7 +14,7 @@ pub enum Verbosity {
 }
 
 pub struct Shell {
-    err: ShellOut,
+    pub err: ShellOut,
     verbosity: Verbosity,
 }
 
@@ -24,7 +24,7 @@ impl fmt::Debug for Shell {
     }
 }
 
-enum ShellOut {
+pub enum ShellOut {
     Write(Box<Write>),
     Stream(Term, ColorChoice),
 }
